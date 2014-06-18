@@ -1,0 +1,46 @@
+#!/bin/bash
+RULE=$*
+IP_TYPE=0
+ERR=""
+
+if [ $RULE = "" ]; then
+	exit 255
+fi
+
+# Check if string contains something we deffinitely don't want to have in
+# there. Just to be on the save side. You never know...
+if [[ $RULE =~ [|\&] ]]; then
+	exit 255
+fi
+
+# Because we can assume that we only get valid IP addresses (they were already
+# checked properly within fail2ban) we only do rudimentary checks to find out
+# if the received string conatains a IPv4 or IPv6 address
+if [[ $RULE =~ \ ([0-9]{1,3}\.){3}[0-9]{1,3}\  ]]; then
+	IP_TYPE=4
+elif [[ $RULE =~ \ (::[A-Fa-f0-9])|((:[A-Fa-f0-9]{1,4}){2,})\  ]]; then
+	IP_TYPE=6
+fi
+
+echo $RULE
+echo $IP_TYPE
+
+if [ $IP_TYPE -eq 4 ]; then
+	iptables $RULE
+	ERR=$?
+elif [ $IP_TYPE -eq 6 ]; then
+	ip6tables $RULE
+	ERR=$?
+else
+	# For both, iptables and ip6tables
+	iptables $RULE
+	ERR=$?
+
+	# search/replace icmp with icmp6
+	RULE6=`echo "$RULE" | sed -r 's/icmp/icmp6/g'`
+	ip6tables $RULE6
+	if [ $ERR -eq "0" ]; then
+		ERR=$?
+	fi
+fi
+exit $ERR

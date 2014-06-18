@@ -1,0 +1,81 @@
+--- filter.py.orig	2013-11-12 22:06:54.000000000 +0100
++++ filter.py	2014-06-18 12:13:28.664189654 +0200
+@@ -268,10 +268,15 @@
+ 			# IP address without CIDR mask
+ 			if len(s) == 1:
+ 				s.insert(1, '32')
++				s.insert(1, '128' if DNSUtils.IP_TYPE == 10 else '32')
+ 			s[1] = long(s[1])
+ 			try:
+-				a = DNSUtils.cidr(s[0], s[1])
+-				b = DNSUtils.cidr(ip, s[1])
++				if DNSUtils.IP_TYPE == 10: # IPv6
++					a = DNSUtils.cidr6(s[0], s[1])
++					b = DNSUtils.cidr6(ip, s[1])
++				else:
++					a = DNSUtils.cidr(s[0], s[1])
++					b = DNSUtils.cidr(ip, s[1])
+ 			except Exception:
+ 				# Check if IP in DNS
+ 				ips = DNSUtils.dnsToIp(i)
+@@ -622,7 +627,11 @@
+ 
+ class DNSUtils:
+ 
+-	IP_CRE = re.compile("^(?:\d{1,3}\.){3}\d{1,3}$")
++	# RegEx to mach any valid IPv4 or IPv6 address
++	IP_CRE = re.compile("^((25[0-5]|2[0-4]\d|1\d\d|\d?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|\d?\d)){3})|((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$")
++	IPv4_CRE = re.compile("^(25[0-5]|2[0-4]\d|1\d\d|\d?\d)(\.(25[0-5]|2[0-4]\d|1\d\d|\d?\d)){3}$")
++	IPv6_CRE = re.compile("^((([0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}:[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){5}:([0-9A-Fa-f]{1,4}:)?[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){4}:([0-9A-Fa-f]{1,4}:){0,2}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){3}:([0-9A-Fa-f]{1,4}:){0,3}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){2}:([0-9A-Fa-f]{1,4}:){0,4}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){6}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(([0-9A-Fa-f]{1,4}:){0,5}:((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|(::([0-9A-Fa-f]{1,4}:){0,5}((\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b)\.){3}(\b((25[0-5])|(1\d{2})|(2[0-4]\d)|(\d{1,2}))\b))|([0-9A-Fa-f]{1,4}::([0-9A-Fa-f]{1,4}:){0,5}[0-9A-Fa-f]{1,4})|(::([0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4})|(([0-9A-Fa-f]{1,4}:){1,7}:))$")
++	IP_TYPE = None
+ 
+ 	#@staticmethod
+ 	def dnsToIp(dns):
+@@ -630,7 +639,7 @@
+ 			Thanks to Kevin Drapel.
+ 		"""
+ 		try:
+-			return socket.gethostbyname_ex(dns)[2]
++			return socket.gethostbyname(dns)[2]
+ 		except socket.error, e:
+ 			logSys.warn("Unable to find a corresponding IP address for %s: %s"
+ 						% (dns, e))
+@@ -644,6 +653,10 @@
+ 		"""
+ 		match = DNSUtils.IP_CRE.match(text)
+ 		if match:
++			if DNSUtils.IPv4_CRE.match(text):
++				DNSUtils.IP_TYPE = socket.AF_INET
++			elif DNSUtils.IPv6_CRE.match(text):
++				DNSUtils.IP_TYPE = socket.AF_INET6
+ 			return match
+ 		else:
+ 			return None
+@@ -655,7 +668,7 @@
+ 		"""
+ 		s = string.split('/', 1)
+ 		try:
+-			socket.inet_aton(s[0])
++			socket.inet_pton(DNSUtils.IP_TYPE, s[0])
+ 			return True
+ 		except socket.error:
+ 			return False
+@@ -697,14 +710,14 @@
+ 
+ 	#@staticmethod
+ 	def addr2bin(string):
+-		""" Convert a string IPv4 address into an unsigned integer.
++		""" Convert a string IPv4/IPv6 address into an unsigned integer.
+ 		"""
+-		return struct.unpack("!L", socket.inet_aton(string))[0]
++		return struct.unpack("!L", socket.inet_pton(DNSUtils.IP_TYPE, string))[0]
+ 	addr2bin = staticmethod(addr2bin)
+ 
+ 	#@staticmethod
+ 	def bin2addr(addr):
+-		""" Convert a numeric IPv4 address into string n.n.n.n form.
++		""" Convert a numeric IPv4/IPv6 address into string n.n.n.n/n:n::n form.
+ 		"""
+-		return socket.inet_ntoa(struct.pack("!L", addr))
++		return socket.inet_ntop(DNSUtils.IP_TYPE, istruct.pack("!L", addr))
+ 	bin2addr = staticmethod(bin2addr)

@@ -1,0 +1,11 @@
+--- failregex.py.orig	2014-06-18 11:18:33.353916335 +0200
++++ failregex.py	2014-06-18 11:18:56.113283827 +0200
+@@ -41,7 +41,7 @@
+ 		self._matchCache = None
+ 		# Perform shortcuts expansions.
+ 		# Replace "<HOST>" with default regular expression for host.
+-		regex = regex.replace("<HOST>", "(?:::f{4,6}:)?(?P<host>[\w\-.^_]*\w)")
++		regex = regex.replace("<HOST>", "(?:::f{4,6}:)?(?P<host>([\d\.]*\d+)|([\w\-.^]*\w)|([a-fA-F0-9\:]*[a-fA-F0-9]))")
+ 		if regex.lstrip() == '':
+ 			raise RegexException("Cannot add empty regex")
+ 		try:
