@@ -11,17 +11,17 @@ How to install:
    # yum install fail2ban
 
 2. Copy files:
-   cp filter.py /usr/share/fail2ban/server/
-   cp failregex.py /usr/share/fail2ban/server/
-   cp iptables-46-multiport-log.conf /etc/fail2ban/actions.d/
-   cp iptables-wrapper /usr/local/sbin/
-   chmod 750 /usr/local/sbin/iptables-wrapper
+  cp filter.py /usr/share/fail2ban/server/
+  cp failregex.py /usr/share/fail2ban/server/
+  cp iptables-46-multiport-log.conf /etc/fail2ban/actions.d/
+  cp iptables-wrapper /usr/local/sbin/
+  chmod 750 /usr/local/sbin/iptables-wrapper
 
 3. Edit jail.conf:
-   Adjust the ignoreip option:
-     ignoreip = 127.0.0.1/8 ::1/128
+  Adjust the ignoreip option:
+    ignoreip = 127.0.0.1/8 ::1/128
 
-   Use "iptables-46-multiport-log" as action
+  Use "iptables-46-multiport-log" as action
 
 
 Done. Happy banning.
