@@ -9,9 +9,11 @@ If you use this version on RHEL/CentOS 6, you simply can replace the files (see 
 ### How to install:
 
 1. Install fail2ban as usual
+
   \# yum install fail2ban
 
 2. Copy files:
+
   cp filter.py /usr/share/fail2ban/server/
   
   cp failregex.py /usr/share/fail2ban/server/
