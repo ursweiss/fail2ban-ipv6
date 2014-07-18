@@ -14,7 +14,7 @@ If you use this version on RHEL/CentOS 6, you simply can replace the files (see 
 2. Copy files:  
   cp filter.py /usr/share/fail2ban/server/  
   cp failregex.py /usr/share/fail2ban/server/  
-  cp iptables-46-multiport-log.conf /etc/fail2ban/actions.d/
+  cp iptables-46-multiport-log.conf /etc/fail2ban/action.d/  
   cp iptables-wrapper /usr/local/sbin/  
   chmod 750 /usr/local/sbin/iptables-wrapper
 
