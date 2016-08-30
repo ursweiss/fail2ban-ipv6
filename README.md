@@ -1,3 +1,11 @@
+# !!! IMPORATNT !!!
+1. This will not work anymore with any 0.9x version of fail2ban
+2. The current 0.10 branch seems to work pretty fine as it will support IPv6 aout of the box and is much cleaner than my hack. No RPM available of course, but very easy to install following their instructions: https://github.com/fail2ban/fail2ban/tree/0.10
+3. Have a lok at their IPv6 support master plan too: https://github.com/fail2ban/fail2ban/issues/1123
+
+
+-----
+
 This repository contains files and patches to make fail2ban work with IPv6 on RHEL/CentOS 6(.5). It's not perfect, but works fine for me.
 
 It only supports iptables (or better, i haven't tested anything else. It may works...).
